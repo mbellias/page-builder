@@ -1,0 +1,23 @@
+datasource db {
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model Website {
+    id          Int      @id @default(autoincrement())
+    userId      String
+    createdAt   DateTime @default(now())
+    published   Boolean  @default(false)
+    name        String
+    description String   @default("")
+    content     String   @default("[]")
+    visits      Int      @default(0)
+    shareUrl    String   @unique @default(uuid())
+
+    @@unique([name, userId])
+}
