@@ -54,14 +54,13 @@ const SlateEditor: React.FC<{
     return elementInstance.attributes?.content?.length > 0
       ? elementInstance.attributes?.content
       : elementInstance.attributes?.initialValue || [];
-  }, [elementInstance.attributes?.content]);
+  }, [elementInstance]);
 
   const [value, setValue] = useState<Descendant[]>(initialValue);
 
   useEffect(() => {
-    console.log(initialValue);
     setValue(initialValue);
-  }, [initialValue]);
+  }, [initialValue, elementInstance]);
 
   const handleChange = (newValue: Descendant[]) => {
     setValue(newValue);

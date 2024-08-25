@@ -17,7 +17,7 @@ function EditorSidebarActions({ website }: { website: Website }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className='flex items-center'
+        className='flex items-center justify-between'
         asChild
       >
         <Button

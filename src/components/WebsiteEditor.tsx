@@ -125,9 +125,36 @@ function WebsiteEditor({ website }: { website: Website }) {
             <EditorSidebarActions website={website} />
           </div>
           <Separator orientation='horizontal' />
-          {!selectedPage && !selectedElement && <EditorSidebar />}
-          {selectedPage && <PagePropertiesSidebar />}
-          {selectedElement && <ElementPropertiesSidebar />}
+          {/* EditorSidebar */}
+          <div
+            className={`transition-opacity duration-300 w-full ${
+              !selectedPage && !selectedElement
+                ? 'opacity-100'
+                : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            {!selectedPage && !selectedElement && <EditorSidebar />}
+          </div>
+
+          {/* PagePropertiesSidebar */}
+          <div
+            className={`transition-opacity duration-300 w-full ${
+              selectedPage && !selectedElement
+                ? 'opacity-100'
+                : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            {selectedPage && !selectedElement && <PagePropertiesSidebar />}
+          </div>
+
+          {/* ElementPropertiesSidebar */}
+          <div
+            className={`transition-opacity duration-300 ${
+              selectedElement ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            {selectedElement && <ElementPropertiesSidebar />}
+          </div>
         </nav>
         <Tabs
           className='w-full h-full'
@@ -141,10 +168,10 @@ function WebsiteEditor({ website }: { website: Website }) {
                   setSelectedElement(null);
                   setSelectedPage(page);
                 }}
-                asChild
                 key={page.slug}
                 value={page.slug}
                 className='h-[35px] px-5 flex-1 flex items-center justify-center text-[15px] leading-none select-none first:rounded-tl-md last:rounded-tr-md hover:text-primary data-[state=active]:shadow-sm outline-none'
+                asChild
               >
                 <button>{page.name}</button>
               </TabsTrigger>

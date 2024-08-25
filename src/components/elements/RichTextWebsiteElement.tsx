@@ -95,7 +95,10 @@ function EditorComponent({
   elementInstance: WebsiteElementInstance;
 }) {
   return (
-    <div className='bg-background border border-dashed border-gray-500 p-2'>
+    <div
+      className='bg-background border border-dashed border-gray-500 p-2'
+      key={elementInstance.id}
+    >
       <SlateEditor
         elementInstance={elementInstance}
         readOnly={true}
@@ -151,6 +154,7 @@ function PropertiesComponent({
 
   return (
     <SlateEditor
+      key={elementInstance.id}
       elementInstance={elementInstance}
       readOnly={false}
       onContentChange={handleContentChange}

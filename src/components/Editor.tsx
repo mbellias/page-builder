@@ -57,7 +57,6 @@ const Editor = forwardRef<HTMLDivElement>((_, ref) => {
       if (isEditorElement) {
         const elementId = e.active.data?.current?.elementId;
 
-        // Handle dragging within the editor area
         const deltaX = e.delta.x;
         const deltaY = e.delta.y;
 
@@ -183,10 +182,9 @@ function EditorElementWrapper({
         style={{
           width: '100%',
           height: '100%',
-          cursor: 'move', // Indicate draggable behavior
+          cursor: 'move',
         }}
         onClick={(e) => {
-          e.stopPropagation();
           setSelectedPage(null);
           setSelectedElement(element);
         }}
