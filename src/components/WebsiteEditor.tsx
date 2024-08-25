@@ -19,6 +19,7 @@ import { Separator } from './ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import CreatePageBtn from './CreatePageBtn';
 import PagePropertiesSidebar from './PagePropertiesSidebar';
+import ElementPropertiesSidebar from './ElementPropertiesSidebar';
 
 function WebsiteEditor({ website }: { website: Website }) {
   const {
@@ -28,6 +29,8 @@ function WebsiteEditor({ website }: { website: Website }) {
     setPages,
     selectedPage,
     setSelectedPage,
+    setSelectedElement,
+    selectedElement,
   } = useEditor();
   const [isReady, setIsReady] = useState(false);
 
@@ -50,7 +53,6 @@ function WebsiteEditor({ website }: { website: Website }) {
     if (isReady) return;
 
     const parsedContent = JSON.parse(website.content);
-    console.log('Parsed Content:', parsedContent);
 
     const validPageIds = Object.keys(parsedContent).filter((slug) => slug);
 
@@ -83,6 +85,18 @@ function WebsiteEditor({ website }: { website: Website }) {
     createdAt: Date,
     description?: string
   ) => {
+    const baseName = name.split('-')[0];
+    let count = 0;
+    for (let i = 0; i < pages.length; i++) {
+      const existingName = pages[i].name;
+      const existingBaseName = existingName.split('-')[0];
+
+      if (existingBaseName === baseName) count++;
+    }
+    if (count > 0) {
+      name = `${baseName}-${count}`;
+      slug = `${baseName.toLowerCase().replace(' ', '-')}-${count}`;
+    }
     setPages((prev) => [...prev, { name, slug, description, createdAt }]);
     setActivePageId(slug);
   };
@@ -102,7 +116,7 @@ function WebsiteEditor({ website }: { website: Website }) {
       collisionDetection={pointerWithin}
     >
       <main className='flex w-full bg-background'>
-        <nav className='flex flex-col w-1/4 p-4 gap-3 items-center'>
+        <nav className='flex flex-col w-1/3 p-4 gap-3 items-center'>
           <h2 className='flex text-xl font-semibold'>
             <span className='text-muted-foreground mb-2 mr-2'>Website:</span>
             {website.name}
@@ -111,8 +125,9 @@ function WebsiteEditor({ website }: { website: Website }) {
             <EditorSidebarActions website={website} />
           </div>
           <Separator orientation='horizontal' />
-          {!selectedPage && <EditorSidebar />}
+          {!selectedPage && !selectedElement && <EditorSidebar />}
           {selectedPage && <PagePropertiesSidebar />}
+          {selectedElement && <ElementPropertiesSidebar />}
         </nav>
         <Tabs
           className='w-full h-full'
@@ -123,6 +138,7 @@ function WebsiteEditor({ website }: { website: Website }) {
             {pages.map((page) => (
               <TabsTrigger
                 onClick={() => {
+                  setSelectedElement(null);
                   setSelectedPage(page);
                 }}
                 asChild
