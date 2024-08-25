@@ -1,13 +1,12 @@
 'use client';
 
 import isHotkey from 'is-hotkey';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createEditor, Descendant } from 'slate';
 import { withHistory } from 'slate-history';
 import { Editable, Slate, withReact } from 'slate-react';
 import { CustomEditor, CustomElement, CustomText } from '../../lib/slate-types';
 import { WebsiteElementInstance } from '../WebsiteElements';
-import useEditor from '../hooks/useEditor';
 import { Element } from './Element';
 import { Leaf } from './Leaf';
 import { Toolbar } from './components';
@@ -27,7 +26,8 @@ const HOTKEYS: Record<string, string> = {
 const SlateEditor: React.FC<{
   elementInstance: WebsiteElementInstance;
   readOnly: boolean;
-}> = ({ elementInstance, readOnly }) => {
+  onContentChange?: (newContent: Descendant[]) => void;
+}> = ({ elementInstance, readOnly, onContentChange }) => {
   const renderElement = useCallback(
     (props: {
       attributes: any;
@@ -54,28 +54,22 @@ const SlateEditor: React.FC<{
     return elementInstance.attributes?.content?.length > 0
       ? elementInstance.attributes?.content
       : elementInstance.attributes?.initialValue || [];
-  }, [elementInstance]);
+  }, [elementInstance.attributes?.content]);
 
   const [value, setValue] = useState<Descendant[]>(initialValue);
 
-  const { updateElement, activePageId } = useEditor();
+  useEffect(() => {
+    console.log(initialValue);
+    setValue(initialValue);
+  }, [initialValue]);
 
   const handleChange = (newValue: Descendant[]) => {
-    if (!activePageId) return;
     setValue(newValue);
 
-    const updatedElement = {
-      ...elementInstance,
-      attributes: {
-        ...elementInstance.attributes,
-        content: newValue,
-      },
-    };
-
-    updateElement(activePageId, elementInstance.id, updatedElement);
+    if (onContentChange) {
+      onContentChange(newValue);
+    }
   };
-
-  const [isBlurred, setIsBlurred] = useState(false);
 
   return (
     <div className='flex flex-col justify-start'>
@@ -83,8 +77,9 @@ const SlateEditor: React.FC<{
         editor={editor}
         initialValue={value}
         onChange={handleChange}
+        key={elementInstance.id}
       >
-        {!isBlurred && !readOnly && (
+        {!readOnly && (
           <Toolbar>
             <MarkBtn
               format='bold'
@@ -144,8 +139,6 @@ const SlateEditor: React.FC<{
         )}
         <Editable
           readOnly={readOnly}
-          onBlur={() => setIsBlurred(true)}
-          onFocus={() => setIsBlurred(false)}
           className='p-2'
           renderElement={renderElement}
           renderLeaf={renderLeaf}

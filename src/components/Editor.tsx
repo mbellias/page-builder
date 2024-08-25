@@ -8,8 +8,12 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { forwardRef, MutableRefObject, useState } from 'react';
-import { FaRegTrashAlt } from 'react-icons/fa';
+import React, {
+  forwardRef,
+  MutableRefObject,
+  useEffect,
+  useState,
+} from 'react';
 import { ResizableBox } from 'react-resizable';
 import useEditor from './hooks/useEditor';
 import {
@@ -19,29 +23,14 @@ import {
 } from './WebsiteElements';
 
 const Editor = forwardRef<HTMLDivElement>((_, ref) => {
-  const {
-    activePageId,
-    elementsByPage,
-    addElement,
-    updateElement,
-    removeElement,
-    selectedElement,
-    setSelectedElement,
-  } = useEditor();
+  const { activePageId, elementsByPage, addElement, updateElement } =
+    useEditor();
   const elements = activePageId ? elementsByPage[activePageId] || [] : [];
-  const [mouseIsOver, setMouseIsOver] = useState(false);
 
   const droppable = useDroppable({
     id: `editor-drop-area-${activePageId}`,
     data: {
       isEditorDropArea: true,
-    },
-  });
-
-  const trashDropArea = useDroppable({
-    id: `trash-drop-area-${activePageId}`,
-    data: {
-      isTrashDropArea: true,
     },
   });
 
@@ -65,31 +54,25 @@ const Editor = forwardRef<HTMLDivElement>((_, ref) => {
       }
 
       const isEditorElement = e.active.data?.current?.isEditorElement;
-      const isDroppingOverTrashDropArea = e.over.data?.current?.isTrashDropArea;
-
       if (isEditorElement) {
         const elementId = e.active.data?.current?.elementId;
 
-        if (isDroppingOverTrashDropArea && !isEditorBtnElement) {
-          removeElement(activePageId, elementId);
-        } else {
-          // Handle dragging within the editor area
-          const deltaX = e.delta.x;
-          const deltaY = e.delta.y;
+        // Handle dragging within the editor area
+        const deltaX = e.delta.x;
+        const deltaY = e.delta.y;
 
-          elements.forEach((el) => {
-            if (el.id === elementId) {
-              const updatedElement = {
-                ...el,
-                position: {
-                  x: el.position.x + deltaX >= 0 ? el.position.x + deltaX : 0,
-                  y: el.position.y + deltaY >= 0 ? el.position.y + deltaY : 0,
-                },
-              };
-              updateElement(activePageId, el.id, updatedElement);
-            }
-          });
-        }
+        elements.forEach((el) => {
+          if (el.id === elementId) {
+            const updatedElement = {
+              ...el,
+              position: {
+                x: el.position.x + deltaX >= 0 ? el.position.x + deltaX : 0,
+                y: el.position.y + deltaY >= 0 ? el.position.y + deltaY : 0,
+              },
+            };
+            updateElement(activePageId, el.id, updatedElement);
+          }
+        });
       }
     },
   });
@@ -136,23 +119,6 @@ const Editor = forwardRef<HTMLDivElement>((_, ref) => {
           ))}
         </>
       )}
-      <div
-        ref={trashDropArea.setNodeRef}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          right: 0,
-          margin: '1rem',
-          zIndex: 1000,
-        }}
-      >
-        <FaRegTrashAlt
-          className={cn(
-            'h-12 w-12 text-primary',
-            trashDropArea.isOver && 'cursor-pointer text-red-500'
-          )}
-        />
-      </div>
     </div>
   );
 });
@@ -169,6 +135,9 @@ function EditorElementWrapper({
     newSize: { width: number; height: number }
   ) => void;
 }) {
+  const { setSelectedElement, setSelectedPage } = useEditor();
+  const [mouseIsOver, setMouseIsOver] = useState(false);
+
   const EditorElement = WebsiteElements[element.type].editorComponent;
 
   const draggable = useDraggable({
@@ -180,7 +149,16 @@ function EditorElementWrapper({
     },
   });
 
-  if (draggable.isDragging) return null;
+  useEffect(() => {
+    if (draggable.isDragging) {
+      setSelectedPage(null);
+      setSelectedElement(null);
+    }
+  }, [draggable, setSelectedElement, setSelectedPage]);
+
+  if (draggable.isDragging) {
+    return null;
+  }
 
   return (
     <ResizableBox
@@ -207,7 +185,21 @@ function EditorElementWrapper({
           height: '100%',
           cursor: 'move', // Indicate draggable behavior
         }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setSelectedPage(null);
+          setSelectedElement(element);
+        }}
+        onMouseEnter={() => setMouseIsOver(true)}
+        onMouseLeave={() => setMouseIsOver(false)}
       >
+        {mouseIsOver && (
+          <div className='absolute flex items-center justify-center rounded-lg h-3/4 w-3/4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
+            <p className='text-transparent bg-clip-text bg-indigo-400 text-xl font-extrabold uppercase animate-bounce'>
+              Click for properties or drag to move
+            </p>
+          </div>
+        )}
         <EditorElement elementInstance={element} />
       </div>
     </ResizableBox>

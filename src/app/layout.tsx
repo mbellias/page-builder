@@ -11,23 +11,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html
-        lang='en'
-        suppressHydrationWarning
-      >
-        <head>
-          <link
-            href='https://fonts.googleapis.com/icon?family=Material+Icons'
-            rel='stylesheet'
-          />
-        </head>
+    <html
+      lang='en'
+      suppressHydrationWarning={true}
+    >
+      <head>
+        <link
+          href='https://fonts.googleapis.com/icon?family=Material+Icons'
+          rel='stylesheet'
+        />
+      </head>
+      <ClerkProvider>
         <body>
           <NextTopLoader />
           <EditorContextProvider>
             <ThemeProvider
               attribute='class'
               defaultTheme='system'
+              themes={['light', 'dark', 'system']}
               enableSystem
               disableTransitionOnChange
             >
@@ -36,7 +37,7 @@ export default function RootLayout({
             </ThemeProvider>
           </EditorContextProvider>
         </body>
-      </html>
-    </ClerkProvider>
+      </ClerkProvider>
+    </html>
   );
 }
